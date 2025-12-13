@@ -15,8 +15,6 @@ export const STATS = {
   likes: "4.2M"
 };
 
-const BASE_TIKTOK_URL = "https://www.tiktok.com/@kia_kitty_cat";
-
 export const MOCK_POSTS: Post[] = [
   {
     id: '1',
