@@ -1,12 +1,13 @@
 import React from 'react';
-import { Share2, Link as LinkIcon, ChevronDown, UserPlus, Sparkles } from 'lucide-react';
+import { Share2, Link as LinkIcon, ChevronDown, UserPlus, Sparkles, TrendingUp } from 'lucide-react';
 import { PROFILE_PIC_URL, USERNAME, COIN_NAME, STATS, CA_ADDRESS } from '../constants';
 
 interface ProfileInfoProps {
   onOpenMemeGenerator: () => void;
+  onOpenTradeSimulator: () => void;
 }
 
-const ProfileInfo: React.FC<ProfileInfoProps> = ({ onOpenMemeGenerator }) => {
+const ProfileInfo: React.FC<ProfileInfoProps> = ({ onOpenMemeGenerator, onOpenTradeSimulator }) => {
   return (
     <div className="flex flex-col items-center md:items-start md:flex-row gap-4 md:gap-8 px-4 py-6 md:py-8 max-w-[800px] text-white mx-auto md:mx-0">
       {/* Avatar */}
@@ -101,13 +102,22 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ onOpenMemeGenerator }) => {
                 </button>
             </div>
             
-            {/* Meme Generator Button (Under the main buttons) */}
+            {/* Meme Generator Button */}
             <button 
                 onClick={onOpenMemeGenerator}
                 className="w-full bg-gradient-to-r from-yellow-600 to-yellow-400 hover:from-yellow-500 hover:to-yellow-300 text-black font-bold py-2 rounded-[4px] md:rounded flex items-center justify-center gap-2 transition-all shadow-lg transform hover:scale-[1.02]"
             >
                 <Sparkles size={18} className="text-black" />
                 <span>Meme Generator</span>
+            </button>
+
+             {/* Trade Simulator Button */}
+             <button 
+                onClick={onOpenTradeSimulator}
+                className="w-full bg-[#1e293b] hover:bg-[#334155] border border-gray-700 text-[#20d5ec] font-bold py-2 rounded-[4px] md:rounded flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
+            >
+                <TrendingUp size={18} />
+                <span>Kia Trade Simulator</span>
             </button>
         </div>
 
