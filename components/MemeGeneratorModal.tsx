@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Sparkles, Download, RefreshCw, Upload, AlertCircle, ImagePlus, Dice5, Zap } from 'lucide-react';
+import { X, Sparkles, Download, RefreshCw, Upload, ImagePlus, Dice5, Zap } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { PROFILE_PIC_URL } from '../constants';
 
