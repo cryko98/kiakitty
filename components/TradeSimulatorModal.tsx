@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Rocket, Skull, Coins, History, Trophy, TrendingUp, AlertTriangle, Wallet, Zap } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Rocket, Skull, Coins, History, AlertTriangle, Wallet } from 'lucide-react';
 import { PROFILE_PIC_URL, TICKER } from '../constants';
 
 interface TradeSimulatorModalProps {
@@ -26,7 +26,6 @@ const TradeSimulatorModal: React.FC<TradeSimulatorModalProps> = ({ onClose }) =>
   // --- User Action State ---
   const [betAmount, setBetAmount] = useState<string>('100');
   const [userState, setUserState] = useState<UserState>('IDLE');
-  const [cashedOutAt, setCashedOutAt] = useState<number | null>(null);
 
   // Refs for animation loop
   const requestRef = useRef<number>();
@@ -58,7 +57,6 @@ const TradeSimulatorModal: React.FC<TradeSimulatorModalProps> = ({ onClose }) =>
     setMultiplier(1.00);
     setLastMilestone(1);
     setCelebrationActive(false);
-    setCashedOutAt(null);
     
     const point = generateCrashPoint();
     setCrashPoint(point);
@@ -129,7 +127,6 @@ const TradeSimulatorModal: React.FC<TradeSimulatorModalProps> = ({ onClose }) =>
     const winAmount = parseFloat(betAmount) * multiplier;
     setBalance(prev => prev + winAmount);
     setUserState('CASHED_OUT');
-    setCashedOutAt(multiplier);
   };
 
   // --- Visual Helpers ---
@@ -385,7 +382,7 @@ const TradeSimulatorModal: React.FC<TradeSimulatorModalProps> = ({ onClose }) =>
                  {userState === 'IDLE' || userState === 'CASHED_OUT' || (gameState === 'CRASHED' && userState !== 'IN_GAME') ? (
                      <button 
                         onClick={startGame}
-                        disabled={gameState === 'RUNNING' && userState !== 'IN_GAME'}
+                        disabled={gameState === 'RUNNING'}
                         className="flex-[1.4] bg-gradient-to-br from-[#20d5ec] to-[#0ea5e9] hover:from-[#1bc0d6] hover:to-[#0284c7] text-white font-black text-2xl rounded-2xl shadow-[0_6px_0_#0f766e] active:shadow-none active:translate-y-[6px] transition-all flex flex-col items-center justify-center leading-none disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden"
                      >
                          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 skew-y-12"></div>
@@ -396,7 +393,7 @@ const TradeSimulatorModal: React.FC<TradeSimulatorModalProps> = ({ onClose }) =>
                  ) : (
                      <button 
                         onClick={cashOut}
-                        disabled={gameState === 'CRASHED' || userState === 'CASHED_OUT'}
+                        disabled={gameState === 'CRASHED'}
                         className={`flex-[1.4] font-black text-2xl rounded-2xl shadow-[0_6px_0_#065f46] active:shadow-none active:translate-y-[6px] transition-all flex flex-col items-center justify-center leading-none overflow-hidden relative ${
                             gameState === 'CRASHED' 
                             ? 'bg-gray-700 text-gray-500 shadow-none translate-y-[6px] cursor-not-allowed' 
