@@ -1,5 +1,5 @@
 import React from 'react';
-import { Share2, Link as LinkIcon, ChevronDown, UserPlus, Sparkles, TrendingUp } from 'lucide-react';
+import { Share2, Link as LinkIcon, ChevronDown, UserPlus, Sparkles, Rocket } from 'lucide-react';
 import { PROFILE_PIC_URL, USERNAME, COIN_NAME, STATS, CA_ADDRESS } from '../constants';
 
 interface ProfileInfoProps {
@@ -111,13 +111,13 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ onOpenMemeGenerator, onOpenTr
                 <span>Meme Generator</span>
             </button>
 
-             {/* Trade Simulator Button */}
+             {/* Kia Cat Crash Button (Formerly Trade Simulator) */}
              <button 
                 onClick={onOpenTradeSimulator}
                 className="w-full bg-[#1e293b] hover:bg-[#334155] border border-gray-700 text-[#20d5ec] font-bold py-2 rounded-[4px] md:rounded flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
             >
-                <TrendingUp size={18} />
-                <span>Kia Trade Simulator</span>
+                <Rocket size={18} />
+                <span>Kia Cat Crash</span>
             </button>
         </div>
 
