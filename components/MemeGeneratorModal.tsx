@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { X, Sparkles, Download, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Sparkles, Download, RefreshCw, Upload, AlertCircle, ImagePlus } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import { PROFILE_PIC_URL } from '../constants';
 
 interface MemeGeneratorModalProps {
   onClose: () => void;
@@ -42,6 +43,13 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [quote, setQuote] = useState<string>("");
+  
+  // Reference handling
+  const [useProfileRef, setUseProfileRef] = useState(true);
+  const [customRefImage, setCustomRefImage] = useState<string | null>(null); // Base64 of uploaded image
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [statusMessage, setStatusMessage] = useState("");
 
   // Trigger generation immediately on open
   useEffect(() => {
@@ -49,9 +57,38 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
 
+  // Handle File Upload
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setCustomRefImage(reader.result as string);
+            setUseProfileRef(false); // Disable auto-profile fetch if custom image is set
+        };
+        reader.readAsDataURL(file);
+    }
+  };
+
+  // Helper to fetch image and convert to base64
+  const getBase64FromUrl = async (url: string): Promise<string | null> => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      console.warn("CORS restricted access to profile pic.");
+      return null;
+    }
+  };
+
   const generateMeme = async () => {
     setLoading(true);
-    setImageUrl(null);
+    setStatusMessage("Preparing prompt...");
     
     const randomQuote = CRYPTO_QUOTES[Math.floor(Math.random() * CRYPTO_QUOTES.length)];
     setQuote(randomQuote);
@@ -61,15 +98,50 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
       // @ts-ignore process.env.API_KEY is injected by Vite define plugin
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
-      const contents = {
-          parts: [
-              { text: `${KIA_KITTY_DESC} \n\nScene: ${randomScenario}. \n\nIMPORTANT INSTRUCTION: Generate a single image. Do NOT include any text, captions, speech bubbles, or words inside the generated image. The image must be completely text-free.` }
-          ]
-      };
+      let promptParts: any[] = [];
+      let base64Image: string | null = null;
+
+      // 1. Determine which image source to use
+      if (customRefImage) {
+          // Priority 1: User uploaded image
+          base64Image = customRefImage;
+          setStatusMessage("Using uploaded reference image...");
+      } else if (useProfileRef) {
+          // Priority 2: Profile URL (might fail CORS)
+          setStatusMessage("Fetching profile picture...");
+          base64Image = await getBase64FromUrl(PROFILE_PIC_URL);
+      }
+
+      // 2. Construct the prompt
+      if (base64Image) {
+          // If we have a valid image (Uploaded or Fetched)
+          const base64Data = base64Image.split(',')[1];
+          promptParts = [
+              { 
+                  inlineData: { 
+                      data: base64Data, 
+                      mimeType: 'image/jpeg' 
+                  } 
+              },
+              { 
+                  text: `Here is the character reference. Create a new photo-realistic image of THIS CAT character ${randomScenario}. Maintain the exact look of the cat (fur pattern, shirt, tie). IMPORTANT: Do NOT include any text inside the image.` 
+              }
+          ];
+      } else {
+          // Priority 3: Text Description Fallback
+          if (useProfileRef) setStatusMessage("Could not access profile image (CORS). Using description...");
+          else setStatusMessage("Generating from description...");
+          
+          promptParts = [
+              { 
+                  text: `${KIA_KITTY_DESC} \n\nScene: ${randomScenario}. \n\nIMPORTANT INSTRUCTION: Generate a single image. Do NOT include any text, captions, speech bubbles, or words inside the generated image. The image must be completely text-free.` 
+              }
+          ];
+      }
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
-        contents: contents
+        contents: { parts: promptParts }
       });
 
       let foundImage = false;
@@ -86,8 +158,7 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
       
       if (!foundImage) {
           console.error("No image found in response");
-          // Fallback if AI fails to generate image
-          setImageUrl("https://picsum.photos/600/600");
+          setImageUrl("https://picsum.photos/600/600"); 
       }
 
     } catch (error) {
@@ -95,6 +166,7 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
       alert("Oops! The AI is sleeping or the key is missing. Try again.");
     } finally {
       setLoading(false);
+      setStatusMessage("");
     }
   };
 
@@ -119,9 +191,10 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
             {/* Image Container */}
             <div className="relative w-full aspect-square bg-black rounded-lg overflow-hidden border border-gray-800 flex items-center justify-center mb-4 group">
                 {loading ? (
-                    <div className="flex flex-col items-center gap-3 text-gray-400 animate-pulse">
+                    <div className="flex flex-col items-center gap-3 text-gray-400 animate-pulse text-center px-4">
                         <RefreshCw className="animate-spin" size={32} />
                         <span className="text-sm font-medium">Cooking up a meme...</span>
+                        <span className="text-xs text-gray-500">{statusMessage}</span>
                     </div>
                 ) : imageUrl ? (
                     <>
@@ -138,11 +211,71 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
                         </div>
                     </>
                 ) : (
-                    <span className="text-gray-500">Something went wrong.</span>
+                    <div className="flex flex-col items-center text-gray-500 gap-2">
+                        <AlertCircle size={32} />
+                        <span>Something went wrong.</span>
+                    </div>
                 )}
             </div>
 
-            {/* Controls */}
+            {/* Reference Settings */}
+            <div className="w-full mb-4 space-y-3">
+                
+                {/* Option 1: Profile Toggle */}
+                <button 
+                    onClick={() => {
+                        setUseProfileRef(!useProfileRef);
+                        setCustomRefImage(null); // Reset custom image if toggling profile
+                    }}
+                    className={`flex items-center gap-2 text-xs md:text-sm transition-colors w-full ${useProfileRef && !customRefImage ? 'text-green-400' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                    <div className={`w-4 h-4 rounded border flex items-center justify-center ${useProfileRef && !customRefImage ? 'bg-green-400 border-green-400' : 'border-gray-500'}`}>
+                        {useProfileRef && !customRefImage && <svg viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="4" className="w-3 h-3"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                    </div>
+                    Use TikTok Profile Picture (May be blocked by browser)
+                </button>
+
+                {/* Option 2: Custom Upload */}
+                <div className="flex items-center gap-2">
+                    <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileUpload} 
+                        accept="image/*" 
+                        className="hidden" 
+                    />
+                    <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded text-xs md:text-sm border border-dashed transition-all ${
+                            customRefImage 
+                            ? 'border-green-500 bg-green-500/10 text-green-400' 
+                            : 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
+                        }`}
+                    >
+                        {customRefImage ? (
+                            <>
+                                <ImagePlus size={16} />
+                                Custom Image Uploaded!
+                            </>
+                        ) : (
+                            <>
+                                <Upload size={16} />
+                                Upload Own Reference Photo (No CORS Error)
+                            </>
+                        )}
+                    </button>
+                    {customRefImage && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setCustomRefImage(null); setUseProfileRef(true); }}
+                            className="p-2 text-gray-500 hover:text-red-400"
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Generate Button */}
             <div className="flex gap-3 w-full">
                 <button 
                     onClick={generateMeme} 
