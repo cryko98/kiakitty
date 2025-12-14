@@ -7,7 +7,7 @@ export const COIN_NAME = "Kia Kitty Cat";
 export const USERNAME = "kia_kitty_cat";
 export const TICKER = "$KIA";
 // Placeholder for the requested CA format
-export const CA_ADDRESS = "XXXXXXXXXXXXXXXXXXXXXXXXXXX"; 
+export const CA_ADDRESS = "9vABQUd6G576gM3tebbXP9PGVv1SgfjAajHMXVPnbonk"; 
 
 export const STATS = {
   following: "262",

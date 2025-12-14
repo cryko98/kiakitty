@@ -77,12 +77,22 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ onOpenMemeGenerator }) => {
                 </button>
 
                 {/* Desktop Actions */}
-                <button className="hidden md:block bg-[#fe2c55] hover:bg-[#ef2950] text-white px-8 py-2 rounded font-bold text-base transition-colors min-w-[208px]">
+                <a 
+                    href="https://x.com/i/communities/2000134271680626950/" 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="hidden md:flex items-center justify-center bg-[#fe2c55] hover:bg-[#ef2950] text-white px-8 py-2 rounded font-bold text-base transition-colors min-w-[208px]"
+                >
                     Community
-                </button>
-                <button className="hidden md:flex bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white px-4 py-2 rounded font-semibold transition-colors items-center gap-2">
+                </a>
+                <a 
+                    href="https://dexscreener.com/solana/2r2r2stj46o4tpfglegefyqx3pxuoxpo28nho32ud3pw" 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="hidden md:flex bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white px-4 py-2 rounded font-semibold transition-colors items-center gap-2"
+                >
                     Chart
-                </button>
+                </a>
                 <button className="hidden md:flex bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white w-10 h-10 items-center justify-center rounded transition-colors">
                     <UserPlus size={20} />
                 </button>
