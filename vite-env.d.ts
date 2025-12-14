@@ -42,13 +42,6 @@ declare module '*.webp' {
 
 declare module '@google/genai';
 
-declare namespace NodeJS {
-  interface ProcessEnv {
-    API_KEY: string;
-    [key: string]: any;
-  }
-}
-
 interface ImportMetaEnv {
   readonly [key: string]: string
 }
