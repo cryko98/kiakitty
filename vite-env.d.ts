@@ -1,5 +1,3 @@
-// /// <reference types="vite/client" />
-
 declare module '*.svg' {
   import * as React from 'react';
   export const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement> & { title?: string }>;
@@ -41,6 +39,8 @@ declare module '*.webp' {
   const value: string;
   export default value;
 }
+
+declare module '@google/genai';
 
 interface ImportMetaEnv {
   readonly [key: string]: string
