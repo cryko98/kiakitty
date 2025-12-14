@@ -42,8 +42,8 @@ declare module '*.webp' {
 
 declare module '@google/genai';
 
-// Augment the existing NodeJS namespace to include API_KEY in ProcessEnv.
-// This avoids redeclaring 'process' which causes "Cannot redeclare block-scoped variable" error.
+// Augment NodeJS namespace to add API_KEY to ProcessEnv.
+// We do not declare 'process' here to avoid conflict with existing global declarations (e.g. from @types/node).
 declare namespace NodeJS {
   interface ProcessEnv {
     API_KEY: string;
