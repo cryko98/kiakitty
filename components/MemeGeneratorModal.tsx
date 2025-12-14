@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Sparkles, Download, RefreshCw, Upload, AlertCircle, ImagePlus, Dice5 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Sparkles, Download, RefreshCw, Upload, AlertCircle, ImagePlus, Dice5, Zap } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { PROFILE_PIC_URL } from '../constants';
 
@@ -28,15 +28,29 @@ const CRYPTO_QUOTES = [
 // Detailed description of the specific Kia Kitty Cat image provided
 const KIA_KITTY_DESC = "A photo-realistic meme of a specific cat character: A chubby, grumpy-looking British Shorthair cat with white and grey/brown bicolor fur. The cat is wearing a white collared business shirt and a dark navy blue silk tie. The cat has a very serious, unimpressed, corporate executive expression. The cat looks like a boss.";
 
-const SCENARIOS = [
-    "sitting on a throne made of golden Bitcoin coins",
-    "working frantically at a trading desk with 6 monitors showing green candles",
-    "driving a red luxury convertible car with the top down",
-    "standing on the moon surface looking back at earth",
-    "sitting in a private jet sipping milk from a crystal glass",
-    "giving a presentation at a boardroom meeting with a graph going up",
-    "wearing cool pixelated sunglasses (deal with it style)",
-    "holding a sign that says 'BUY THE DIP'"
+// Dynamic prompts components
+const TRADER_ACTIONS = [
+    "panic selling everything", "buying the absolute top", "staring at a 90% loss", 
+    "watching a coin pump 1000%", "drawing random lines on technical charts", "ignoring a margin call",
+    "explaining crypto to a confused grandma", "checking portfolio every 5 seconds", "fomoing into a rugpull",
+    "celebrating a $5 profit", "eating instant noodles", "praying to the green candle god",
+    "fighting bear market demons", "hunting for the next 100x gem", "auditing a smart contract with a magnifying glass",
+    "losing seed phrase", "finding an old wallet with bitcoin", "getting liquidated", "yelling at the wifi router",
+    "running a node on a toaster", "minting a worthless NFT", "reading the whitepaper upside down"
+];
+
+const TRADER_EMOTIONS = [
+    "sweating nervously", "with laser eyes", "crying tears of joy", "looking dead inside",
+    "grinning like a maniac", "looking completely confused", "looking like a genius", "wearing cool pixelated shades",
+    "screaming internally", "looking suspicious", "with a smug face", "looking exhausted", "feeling euphoric",
+    "looking angry at the screen", "looking surprisingly calm", "drooling slightly"
+];
+
+const TRADER_LOCATIONS = [
+    "in a messy bedroom full of monitors", "on a luxury yacht", "at a mcdonalds kitchen", "on the moon surface",
+    "at a high-tech wall street desk", "under a cardboard box bridge", "in a lamborghini driver seat", "at a boring day job office",
+    "in a burning room", "at a crypto conference stage", "inside the matrix", "on a rollercoaster",
+    "in a supermarket aisle", "at a family dinner table", "in a private jet", "on a tropical beach"
 ];
 
 const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
@@ -53,12 +67,6 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [statusMessage, setStatusMessage] = useState("");
-
-  // Trigger generation immediately on open (with random scenario, no text)
-  useEffect(() => {
-     generateMeme();
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
 
   // Handle File Upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,6 +86,17 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
       setCaptionInput(random);
   };
 
+  const handleRandomKiaMeme = () => {
+      // Generate a dynamic prompt
+      const action = TRADER_ACTIONS[Math.floor(Math.random() * TRADER_ACTIONS.length)];
+      const emotion = TRADER_EMOTIONS[Math.floor(Math.random() * TRADER_EMOTIONS.length)];
+      const location = TRADER_LOCATIONS[Math.floor(Math.random() * TRADER_LOCATIONS.length)];
+      
+      const dynamicPrompt = `${action} ${location} ${emotion}`;
+      setPromptInput(dynamicPrompt);
+      generateMeme(dynamicPrompt);
+  };
+
   // Helper to fetch image and convert to base64
   const getBase64FromUrl = async (url: string): Promise<string | null> => {
     try {
@@ -94,15 +113,17 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
     }
   };
 
-  const generateMeme = async () => {
+  const generateMeme = async (overridePrompt?: string) => {
+    // Determine prompt: override (random button) > input > fallback
+    let scenarioToUse = overridePrompt || promptInput.trim();
+    
+    if (!scenarioToUse) {
+        alert("Please enter a prompt or click the Random button!");
+        return;
+    }
+
     setLoading(true);
     setStatusMessage("Preparing prompt...");
-    
-    // Determine scenario: user input OR random
-    let scenarioToUse = promptInput.trim();
-    if (!scenarioToUse) {
-        scenarioToUse = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
-    }
 
     try {
       // @ts-ignore process.env.API_KEY is injected by Vite define plugin
@@ -223,9 +244,12 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
                         )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center text-gray-500 gap-2">
-                        <AlertCircle size={32} />
-                        <span>Something went wrong.</span>
+                    <div className="flex flex-col items-center text-gray-500 gap-2 text-center p-6">
+                        <div className="w-16 h-16 bg-[#2f2f2f] rounded-full flex items-center justify-center mb-2">
+                            <Sparkles size={32} className="text-yellow-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-white">Ready to create!</h3>
+                        <p className="text-sm text-gray-400">Enter a prompt below or hit the Random button for a surprise.</p>
                     </div>
                 )}
             </div>
@@ -234,7 +258,7 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
             <div className="w-full space-y-3 mb-4 shrink-0">
                  {/* Prompt Input */}
                 <div>
-                    <label className="text-[10px] text-gray-400 mb-1.5 block uppercase font-bold tracking-wider">Prompt (Leave empty for random)</label>
+                    <label className="text-[10px] text-gray-400 mb-1.5 block uppercase font-bold tracking-wider">Prompt</label>
                     <input 
                         type="text"
                         value={promptInput}
@@ -323,24 +347,36 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
                  )}
             </div>
 
-            {/* Generate Button */}
-            <div className="flex gap-3 w-full mt-auto shrink-0">
-                <button 
-                    onClick={generateMeme} 
-                    disabled={loading}
-                    className="flex-1 bg-[#fe2c55] hover:bg-[#ef2950] disabled:bg-gray-700 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg"
-                >
-                    <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
-                    {loading ? "Generating..." : "Generate Meme"}
-                </button>
-                
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2 w-full mt-auto shrink-0">
+                <div className="flex gap-2">
+                     <button 
+                        onClick={handleRandomKiaMeme} 
+                        disabled={loading}
+                        className="flex-1 bg-yellow-400 hover:bg-yellow-300 disabled:bg-gray-700 disabled:text-gray-500 text-black font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg"
+                    >
+                        {loading ? <RefreshCw size={20} className="animate-spin" /> : <Zap size={20} />}
+                        <span className="text-sm md:text-base">RANDOMIZE</span>
+                    </button>
+                    
+                    <button 
+                        onClick={() => generateMeme()} 
+                        disabled={loading}
+                        className="flex-1 bg-[#fe2c55] hover:bg-[#ef2950] disabled:bg-gray-700 disabled:text-gray-500 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg"
+                    >
+                        {loading ? <RefreshCw size={20} className="animate-spin" /> : <Sparkles size={20} />}
+                        <span className="text-sm md:text-base">Generate</span>
+                    </button>
+                </div>
+
                 {imageUrl && !loading && (
                     <a 
                         href={imageUrl} 
                         download={`kia-meme-${Date.now()}.png`}
-                        className="bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center transition-colors"
+                        className="bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors w-full border border-gray-700"
                     >
-                        <Download size={22} />
+                        <Download size={20} />
+                        Download Meme
                     </a>
                 )}
             </div>
