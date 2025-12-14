@@ -1,8 +1,12 @@
 import React from 'react';
-import { Share2, Link as LinkIcon, ChevronDown, UserPlus } from 'lucide-react';
+import { Share2, Link as LinkIcon, ChevronDown, UserPlus, Sparkles } from 'lucide-react';
 import { PROFILE_PIC_URL, USERNAME, COIN_NAME, STATS, CA_ADDRESS } from '../constants';
 
-const ProfileInfo: React.FC = () => {
+interface ProfileInfoProps {
+  onOpenMemeGenerator: () => void;
+}
+
+const ProfileInfo: React.FC<ProfileInfoProps> = ({ onOpenMemeGenerator }) => {
   return (
     <div className="flex flex-col items-center md:items-start md:flex-row gap-4 md:gap-8 px-4 py-6 md:py-8 max-w-[800px] text-white mx-auto md:mx-0">
       {/* Avatar */}
@@ -62,27 +66,38 @@ const ProfileInfo: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 mb-4 w-full md:w-auto justify-center">
-            {/* Mobile Actions */}
-            <button className="md:hidden bg-[#fe2c55] hover:bg-[#ef2950] text-white px-8 py-2.5 rounded-[4px] font-bold text-sm flex-1">
-                Follow
-            </button>
-            <button className="md:hidden bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white px-3 py-2.5 rounded-[4px] font-semibold border border-gray-700">
-                <ChevronDown size={20} />
-            </button>
+        <div className="flex flex-col gap-2 w-full md:w-auto mb-4">
+            <div className="flex items-center gap-2 w-full md:w-auto justify-center">
+                {/* Mobile Actions */}
+                <button className="md:hidden bg-[#fe2c55] hover:bg-[#ef2950] text-white px-8 py-2.5 rounded-[4px] font-bold text-sm flex-1">
+                    Follow
+                </button>
+                <button className="md:hidden bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white px-3 py-2.5 rounded-[4px] font-semibold border border-gray-700">
+                    <ChevronDown size={20} />
+                </button>
 
-            {/* Desktop Actions */}
-            <button className="hidden md:block bg-[#fe2c55] hover:bg-[#ef2950] text-white px-8 py-2 rounded font-bold text-base transition-colors min-w-[208px]">
-                Community
-            </button>
-            <button className="hidden md:flex bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white px-4 py-2 rounded font-semibold transition-colors items-center gap-2">
-                Chart
-            </button>
-            <button className="hidden md:flex bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white w-10 h-10 items-center justify-center rounded transition-colors">
-                <UserPlus size={20} />
-            </button>
-            <button className="hidden md:flex bg-transparent hover:bg-[#1f1f1f] text-white w-10 h-10 items-center justify-center rounded transition-colors">
-                <Share2 size={24} />
+                {/* Desktop Actions */}
+                <button className="hidden md:block bg-[#fe2c55] hover:bg-[#ef2950] text-white px-8 py-2 rounded font-bold text-base transition-colors min-w-[208px]">
+                    Community
+                </button>
+                <button className="hidden md:flex bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white px-4 py-2 rounded font-semibold transition-colors items-center gap-2">
+                    Chart
+                </button>
+                <button className="hidden md:flex bg-[#2f2f2f] hover:bg-[#3f3f3f] text-white w-10 h-10 items-center justify-center rounded transition-colors">
+                    <UserPlus size={20} />
+                </button>
+                <button className="hidden md:flex bg-transparent hover:bg-[#1f1f1f] text-white w-10 h-10 items-center justify-center rounded transition-colors">
+                    <Share2 size={24} />
+                </button>
+            </div>
+            
+            {/* Meme Generator Button (Under the main buttons) */}
+            <button 
+                onClick={onOpenMemeGenerator}
+                className="w-full bg-gradient-to-r from-yellow-600 to-yellow-400 hover:from-yellow-500 hover:to-yellow-300 text-black font-bold py-2 rounded-[4px] md:rounded flex items-center justify-center gap-2 transition-all shadow-lg transform hover:scale-[1.02]"
+            >
+                <Sparkles size={18} className="text-black" />
+                <span>Meme Generator</span>
             </button>
         </div>
 

@@ -5,12 +5,14 @@ import ContentTabs from './components/ContentTabs';
 import ContentGrid from './components/ContentGrid';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
+import MemeGeneratorModal from './components/MemeGeneratorModal';
 import { TabType } from './types';
 import { MOCK_POSTS } from './constants';
 import { ScanLine } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>(TabType.POSTS);
+  const [isMemeModalOpen, setIsMemeModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col md:flex-row">
@@ -38,7 +40,7 @@ const App: React.FC = () => {
         </div>
 
         <main className="px-0 md:px-8 pb-10">
-          <ProfileInfo />
+          <ProfileInfo onOpenMemeGenerator={() => setIsMemeModalOpen(true)} />
           
           <div className="mt-2 border-t border-gray-800 md:border-t-0">
             <ContentTabs 
@@ -60,6 +62,11 @@ const App: React.FC = () => {
       <div className="md:hidden">
         <BottomNav />
       </div>
+
+      {/* Meme Generator Modal */}
+      {isMemeModalOpen && (
+        <MemeGeneratorModal onClose={() => setIsMemeModalOpen(false)} />
+      )}
     </div>
   );
 };
