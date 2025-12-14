@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Download, RefreshCw } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
-import { PROFILE_PIC_URL } from '../constants';
 
 interface MemeGeneratorModalProps {
   onClose: () => void;
@@ -25,49 +24,26 @@ const CRYPTO_QUOTES = [
   "1 $KIA = 1 $KIA"
 ];
 
-// Fallback description if image fetch fails (CORS)
-const BASE_CAT_DESC = "A grumpy, stocky British Shorthair cat with bi-color fur (grey/brown patches on white). The cat has a very serious, unimpressed expression and is wearing a crisp white dress shirt with a dark navy blue silk tie. The cat looks like a business executive.";
+// Detailed description of the specific Kia Kitty Cat image provided
+const KIA_KITTY_DESC = "A photo-realistic meme of a specific cat character: A chubby, grumpy-looking British Shorthair cat with white and grey/brown bicolor fur. The cat is wearing a white collared business shirt and a dark navy blue silk tie. The cat has a very serious, unimpressed, corporate executive expression. The cat looks like a boss.";
 
 const SCENARIOS = [
-    "sitting on a massive pile of gold coins",
-    "floating in outer space near the moon, digital art style",
-    "looking stressed at a computer screen with a red stock chart in the background",
-    "driving a red luxury sports car",
-    "sitting at a mahogany desk in a high-rise office",
-    "meditating while floating in the air, radiating glowing energy",
-    "looking shocked with paws on face, dramatic lighting",
-    "holding a green candle stick chart pattern"
+    "sitting on a throne made of golden Bitcoin coins",
+    "working frantically at a trading desk with 6 monitors showing green candles",
+    "driving a red luxury convertible car with the top down",
+    "standing on the moon surface looking back at earth",
+    "sitting in a private jet sipping milk from a crystal glass",
+    "giving a presentation at a boardroom meeting with a graph going up",
+    "wearing cool pixelated sunglasses (deal with it style)",
+    "holding a sign that says 'BUY THE DIP'"
 ];
 
 const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [quote, setQuote] = useState<string>("");
-  const [referenceImageBase64, setReferenceImageBase64] = useState<string | null>(null);
 
-  // Attempt to load the profile picture as a reference image for the AI
-  useEffect(() => {
-    const fetchProfileImage = async () => {
-        try {
-            const response = await fetch(PROFILE_PIC_URL);
-            if (!response.ok) throw new Error("Failed to fetch profile pic");
-            const blob = await response.blob();
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const result = reader.result as string;
-                // Remove the data URL prefix to get raw base64
-                const base64 = result.split(',')[1];
-                setReferenceImageBase64(base64);
-            };
-            reader.readAsDataURL(blob);
-        } catch (error) {
-            console.log("Could not load profile picture for reference (likely CORS). Using text description only.");
-        }
-    };
-    fetchProfileImage();
-  }, []);
-
-  // Trigger generation once we have attempted to fetch the image (or immediately if useEffect runs)
+  // Trigger generation immediately on open
   useEffect(() => {
      generateMeme();
      // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,33 +58,14 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
     const randomScenario = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
 
     try {
+      // @ts-ignore process.env.API_KEY is injected by Vite define plugin
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
-      let contents: any;
-
-      if (referenceImageBase64) {
-          // Use image reference for exact likeness
-          contents = {
-              parts: [
-                  {
-                      inlineData: {
-                          mimeType: 'image/jpeg',
-                          data: referenceImageBase64
-                      }
-                  },
-                  {
-                      text: `Generate a high-quality meme image. The main character MUST be the cat in the provided reference image. Preserve the cat's exact appearance: the bi-color fur, the grumpy expression, the white shirt, and the navy blue tie. Do not change the cat's clothes or face. Scene: ${randomScenario}. IMPORTANT: Do not render any text, words, letters, speech bubbles, or captions in the image itself. The image should be text-free so I can add my own overlay.`
-                  }
-              ]
-          };
-      } else {
-          // Fallback to text description
-          contents = {
-              parts: [
-                  { text: `${BASE_CAT_DESC} Scene: ${randomScenario}. IMPORTANT: Do not render any text, words, letters, speech bubbles, or captions in the image itself. The image should be text-free so I can add my own overlay.` }
-              ]
-          };
-      }
+      const contents = {
+          parts: [
+              { text: `${KIA_KITTY_DESC} \n\nScene: ${randomScenario}. \n\nIMPORTANT INSTRUCTION: Generate a single image. Do NOT include any text, captions, speech bubbles, or words inside the generated image. The image must be completely text-free.` }
+          ]
+      };
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
@@ -129,12 +86,13 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
       
       if (!foundImage) {
           console.error("No image found in response");
+          // Fallback if AI fails to generate image
           setImageUrl("https://picsum.photos/600/600");
       }
 
     } catch (error) {
       console.error("Error generating meme:", error);
-      alert("Oops! The AI is sleeping. Try again.");
+      alert("Oops! The AI is sleeping or the key is missing. Try again.");
     } finally {
       setLoading(false);
     }
@@ -170,10 +128,10 @@ const MemeGeneratorModal: React.FC<MemeGeneratorModalProps> = ({ onClose }) => {
                         <img src={imageUrl} alt="AI Meme" className="w-full h-full object-cover" />
                         {/* Meme Text Overlay */}
                         <div className="absolute inset-0 flex flex-col justify-end pb-6 items-center pointer-events-none p-4">
-                             <h2 className="font-['Impact'] text-4xl md:text-5xl text-white uppercase text-center tracking-wide leading-tight"
+                             <h2 className="font-['Impact'] text-4xl md:text-5xl text-white uppercase text-center tracking-wide leading-tight drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]"
                                  style={{ 
-                                     textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
-                                     WebkitTextStroke: '2px black'
+                                     textShadow: '3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
+                                     WebkitTextStroke: '1px black'
                                  }}>
                                  {quote}
                              </h2>

@@ -42,14 +42,6 @@ declare module '*.webp' {
 
 declare module '@google/genai';
 
-// Augment NodeJS namespace to add API_KEY to ProcessEnv.
-// We do not declare 'process' here to avoid conflict with existing global declarations (e.g. from @types/node).
-declare namespace NodeJS {
-  interface ProcessEnv {
-    API_KEY: string;
-  }
-}
-
 interface ImportMetaEnv {
   readonly [key: string]: string
 }
